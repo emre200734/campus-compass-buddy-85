@@ -372,7 +372,7 @@ function CampusNav() {
             />
           </div>
 
-          {route && (
+          {route && destination && (
             <p className="text-xs text-muted-foreground">
               Route from <span className="text-foreground">{origin.name}</span> to{" "}
               <span className="text-foreground">{destination.name}</span> · {route.metres} m ·{" "}
