@@ -49,17 +49,7 @@ export function CampusMap({
     setZoom(clamped);
   }, []);
 
-  const wheelRef = useRef((e: WheelEvent) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
-    applyZoom(
-      stateRef.current.zoom * Math.exp(-dy * 0.0018),
-      e.clientX - rect.left,
-      e.clientY - rect.top,
-    );
-  });
+  const wheelRef = useRef<(e: WheelEvent) => void>(() => {});
   wheelRef.current = (e: WheelEvent) => {
     const el = containerRef.current;
     if (!el) return;
@@ -71,6 +61,7 @@ export function CampusMap({
       e.clientY - rect.top,
     );
   };
+
 
   useEffect(() => {
     const el = containerRef.current;
