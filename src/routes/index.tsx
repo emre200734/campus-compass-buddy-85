@@ -44,13 +44,14 @@ const CATEGORY_ORDER: Category[] = [
   "sports",
 ];
 
+const POPULAR_IDS = ["library", "canteen", "cs-lab-2", "admin-office", "washroom-a", "medical"];
+
 function CampusNav() {
   const [query, setQuery] = useState("");
   const [floor, setFloor] = useState<Floor>(0);
   const [category, setCategory] = useState<Category | null>(null);
   const [origin, setOrigin] = useState<Place>(places[0]!);
   const [destination, setDestination] = useState<Place | null>(null);
-  const [navigating, setNavigating] = useState(false);
   const [stepFree, setStepFree] = useState(false);
 
   const results = useMemo(() => {
@@ -64,6 +65,14 @@ function CampusNav() {
       )
       .slice(0, 8);
   }, [query]);
+
+  const popular = useMemo(
+    () =>
+      POPULAR_IDS.map((id) => places.find((p) => p.id === id)).filter(
+        (p): p is Place => Boolean(p),
+      ),
+    [],
+  );
 
   const visible = useMemo(
     () =>
@@ -81,34 +90,58 @@ function CampusNav() {
     [origin, destination, stepFree],
   );
 
+  // Picking a destination shows directions immediately — no extra click.
   const pick = (p: Place) => {
     setDestination(p);
     setFloor(p.floor);
     setQuery("");
-    setNavigating(false);
+  };
+
+  const reset = () => {
+    setDestination(null);
+    setQuery("");
+    setCategory(null);
+    setFloor(0);
+  };
+
+  const swap = () => {
+    if (!destination) return;
+    setOrigin(destination);
+    setDestination(origin);
+    setFloor(origin.floor);
   };
 
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/60 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-lg text-primary-foreground">
-              🎓
-            </div>
-            <div>
-              <h1 className="font-display text-xl leading-tight">CampusNav</h1>
-              <p className="text-xs text-muted-foreground">
-                Smart Interactive Campus Navigation System
-              </p>
-            </div>
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-5 py-4">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-lg text-primary-foreground">
+            🎓
           </div>
-          <div className="ml-auto flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">You are at</span>
+          <div>
+            <h1 className="font-display text-xl leading-tight">CampusNav</h1>
+            <p className="text-xs text-muted-foreground">
+              Kisi bhi class, lab ya office tak ka sabse aasan rasta
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[400px_1fr]">
+        {/* Left panel */}
+        <section className="space-y-4">
+          {/* Step 1 — where are you */}
+          <div className="panel p-4">
+            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+                1
+              </span>
+              Aap abhi kahan ho?
+            </p>
             <select
               value={origin.id}
               onChange={(e) => setOrigin(places.find((p) => p.id === e.target.value) ?? origin)}
-              className="rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-secondary px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               aria-label="Current location"
             >
               {places.map((p) => (
@@ -118,47 +151,70 @@ function CampusNav() {
               ))}
             </select>
           </div>
-        </div>
-      </header>
 
-      <div className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[380px_1fr]">
-        {/* Left panel */}
-        <section className="space-y-4">
-          <div className="relative">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search room, lab, department, faculty…"
-              className="w-full rounded-xl border border-input bg-card py-3 pl-10 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-              aria-label="Search campus"
-            />
-            <span className="pointer-events-none absolute left-3.5 top-3 text-sm">🔍</span>
-            {results.length > 0 && (
-              <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-2xl">
-                {results.map((r) => (
-                  <li key={r.id}>
-                    <button
-                      onClick={() => pick(r)}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-secondary"
-                    >
-                      <span>{CATEGORY_META[r.category].icon}</span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm">{r.name}</span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {r.building} · {FLOOR_LABELS[r.floor]}
-                          {r.room ? ` · ${r.room}` : ""}
+          {/* Step 2 — where to go */}
+          <div className="panel p-4">
+            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                2
+              </span>
+              Kahan jaana hai?
+            </p>
+            <div className="relative">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search: CS Lab 2, library, canteen…"
+                className="w-full rounded-xl border border-input bg-secondary py-3 pl-10 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                aria-label="Search campus"
+              />
+              <span className="pointer-events-none absolute left-3.5 top-3 text-sm">🔍</span>
+              {results.length > 0 && (
+                <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-2xl">
+                  {results.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        onClick={() => pick(r)}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-secondary"
+                      >
+                        <span>{CATEGORY_META[r.category].icon}</span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm">{r.name}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {r.building} · {FLOOR_LABELS[r.floor]}
+                            {r.room ? ` · ${r.room}` : ""}
+                          </span>
                         </span>
-                      </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Popular quick picks */}
+            {!destination && (
+              <div className="mt-3">
+                <p className="mb-2 text-xs text-muted-foreground">Ya ek tap mein chuno:</p>
+                <div className="flex flex-wrap gap-2">
+                  {popular.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => pick(p)}
+                      className="rounded-full border border-border bg-secondary px-3 py-1.5 text-xs text-secondary-foreground transition-colors hover:bg-muted"
+                    >
+                      {CATEGORY_META[p.category].icon} {p.name}
                     </button>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
+          {/* Categories */}
           <div className="panel p-4">
             <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-              Categories
+              Categories — map par filter karo
             </p>
             <div className="grid grid-cols-2 gap-2">
               {CATEGORY_ORDER.map((c) => {
@@ -181,24 +237,49 @@ function CampusNav() {
             </div>
           </div>
 
-          {destination ? (
+          {/* Destination + directions */}
+          {destination && (
             <div className="panel overflow-hidden">
               <div className="border-b border-border p-4">
-                <p className="text-xs uppercase tracking-widest text-primary">Destination</p>
-                <h2 className="mt-1 font-display text-lg">{destination.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {destination.dept ?? CATEGORY_META[destination.category].label}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {destination.building} • {FLOOR_LABELS[destination.floor]}
-                  {destination.room ? ` • Room ${destination.room}` : ""}
-                </p>
-                {route && (
-                  <div className="mt-3 flex gap-4 text-sm">
-                    <span>📍 {route.metres} m away</span>
-                    <span>🚶 {route.minutes} min</span>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-primary">Destination</p>
+                    <h2 className="mt-1 font-display text-lg">{destination.name}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {destination.dept ?? CATEGORY_META[destination.category].label}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {destination.building} • {FLOOR_LABELS[destination.floor]}
+                      {destination.room ? ` • Room ${destination.room}` : ""}
+                    </p>
                   </div>
+                  <button
+                    onClick={reset}
+                    className="rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-secondary"
+                    aria-label="Clear destination"
+                  >
+                    ✕ Clear
+                  </button>
+                </div>
+
+                {route ? (
+                  <div className="mt-3 flex items-center gap-4 rounded-xl bg-secondary px-3 py-2.5 text-sm">
+                    <span>📍 {route.metres} m</span>
+                    <span>🚶 {route.minutes} min walk</span>
+                    <button
+                      onClick={swap}
+                      className="ml-auto rounded-lg border border-border px-2.5 py-1 text-xs hover:bg-muted"
+                      title="Swap start and destination"
+                    >
+                      ⇅ Swap
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-lg bg-destructive/15 px-3 py-2 text-xs text-destructive-foreground">
+                    ⚠️ Step-free route available nahi hai is room tak — stairs use karein.
+                  </p>
                 )}
+
                 <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                   <input
                     type="checkbox"
@@ -206,23 +287,17 @@ function CampusNav() {
                     onChange={(e) => setStepFree(e.target.checked)}
                     className="accent-[var(--primary)]"
                   />
-                  Step-free route (use lifts / ramps)
+                  Step-free route (lift / ramp only)
                 </label>
                 {stepFree && !destination.accessible && (
                   <p className="mt-2 rounded-lg bg-destructive/15 px-3 py-2 text-xs text-destructive-foreground">
-                    ⚠️ This room is only reachable by stairs. Ask staff at the block entrance for
-                    assistance.
+                    ⚠️ Ye room sirf stairs se pahuncha ja sakta hai. Block entrance par staff se
+                    help lein.
                   </p>
                 )}
-                <button
-                  onClick={() => setNavigating(true)}
-                  className="mt-4 w-full rounded-xl bg-primary px-4 py-3 font-display text-sm text-primary-foreground transition-opacity hover:opacity-90"
-                >
-                  GET DIRECTIONS
-                </button>
               </div>
 
-              {navigating && route && (
+              {route && (
                 <ol className="space-y-0 p-4">
                   {route.steps.map((s, i) => (
                     <li key={i} className="flex gap-3 pb-3 last:pb-0">
@@ -245,18 +320,15 @@ function CampusNav() {
                   ))}
                 </ol>
               )}
-              {navigating && !route && (
-                <p className="p-4 text-sm text-muted-foreground">
-                  No step-free route available to this room.
-                </p>
-              )}
             </div>
-          ) : (
+          )}
+
+          {!destination && (
             <div className="panel p-4 text-sm text-muted-foreground">
-              <p className="font-display text-base text-foreground">Freshman mode 🧑‍🎓</p>
+              <p className="font-display text-base text-foreground">Naye ho campus par? 🧑‍🎓</p>
               <p className="mt-1">
-                Pick where you are in the header, then search or tap any marker on the map to get
-                walking directions across campus.
+                Upar apni location chuno, phir search karo ya map par kisi bhi marker ko tap karo —
+                rasta turant mil jayega.
               </p>
             </div>
           )}
@@ -295,17 +367,16 @@ function CampusNav() {
               visible={visible}
               origin={origin}
               destination={destination}
-              routeNodeIds={navigating && route ? route.nodeIds : null}
+              routeNodeIds={route ? route.nodeIds : null}
               onSelect={pick}
             />
           </div>
 
-          {navigating && route && (
+          {route && (
             <p className="text-xs text-muted-foreground">
               Route from <span className="text-foreground">{origin.name}</span> to{" "}
-              <span className="text-foreground">{destination?.name}</span> ·{" "}
-              {route.metres} m · {route.minutes} min ·{" "}
-              {destination ? floorName(destination.floor) : ""}
+              <span className="text-foreground">{destination.name}</span> · {route.metres} m ·{" "}
+              {route.minutes} min · {floorName(destination.floor)}
             </p>
           )}
         </section>
