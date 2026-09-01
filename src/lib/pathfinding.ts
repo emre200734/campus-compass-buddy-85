@@ -124,9 +124,9 @@ export function findRoute(
   };
 
   for (let i = 0; i < res.usedEdges.length; i++) {
-    const e = res.usedEdges[i];
-    const a = nodeMap.get(res.path[i])!;
-    const b = nodeMap.get(res.path[i + 1])!;
+    const e = res.usedEdges[i]!;
+    const a = nodeMap.get(res.path[i]!)!;
+    const b = nodeMap.get(res.path[i + 1]!)!;
 
     if (e.stairs || e.lift) {
       flushWalk();
@@ -153,7 +153,7 @@ export function findRoute(
       continue;
     }
 
-    const next = nodeMap.get(res.path[i + 2]);
+    const next = res.path[i + 2] ? nodeMap.get(res.path[i + 2]!) : undefined;
     if (next) {
       const turn = bearingTurn(a, b, next);
       if (turn) {

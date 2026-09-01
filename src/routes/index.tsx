@@ -48,7 +48,7 @@ function CampusNav() {
   const [query, setQuery] = useState("");
   const [floor, setFloor] = useState<Floor>(0);
   const [category, setCategory] = useState<Category | null>(null);
-  const [origin, setOrigin] = useState<Place>(places[0]);
+  const [origin, setOrigin] = useState<Place>(places[0]!);
   const [destination, setDestination] = useState<Place | null>(null);
   const [navigating, setNavigating] = useState(false);
   const [stepFree, setStepFree] = useState(false);
@@ -107,7 +107,7 @@ function CampusNav() {
             <span className="text-muted-foreground">You are at</span>
             <select
               value={origin.id}
-              onChange={(e) => setOrigin(places.find((p) => p.id === e.target.value)!)}
+              onChange={(e) => setOrigin(places.find((p) => p.id === e.target.value) ?? origin)}
               className="rounded-lg border border-input bg-secondary px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               aria-label="Current location"
             >
