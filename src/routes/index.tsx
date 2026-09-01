@@ -121,7 +121,7 @@ function CampusNav() {
           <div>
             <h1 className="font-display text-xl leading-tight">CampusNav</h1>
             <p className="text-xs text-muted-foreground">
-              Kisi bhi class, lab ya office tak ka sabse aasan rasta
+              The easiest way to any class, lab or office
             </p>
           </div>
         </div>
@@ -136,7 +136,7 @@ function CampusNav() {
               <span className="grid h-6 w-6 place-items-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
                 1
               </span>
-              Aap abhi kahan ho?
+              Where are you now?
             </p>
             <select
               value={origin.id}
@@ -158,7 +158,7 @@ function CampusNav() {
               <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 2
               </span>
-              Kahan jaana hai?
+              Where do you want to go?
             </p>
             <div className="relative">
               <input
@@ -195,7 +195,7 @@ function CampusNav() {
             {/* Popular quick picks */}
             {!destination && (
               <div className="mt-3">
-                <p className="mb-2 text-xs text-muted-foreground">Ya ek tap mein chuno:</p>
+                <p className="mb-2 text-xs text-muted-foreground">Or pick one with a tap:</p>
                 <div className="flex flex-wrap gap-2">
                   {popular.map((p) => (
                     <button
@@ -214,7 +214,7 @@ function CampusNav() {
           {/* Categories */}
           <div className="panel p-4">
             <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-              Categories — map par filter karo
+              Categories — filter on the map
             </p>
             <div className="grid grid-cols-2 gap-2">
               {CATEGORY_ORDER.map((c) => {
@@ -276,7 +276,7 @@ function CampusNav() {
                   </div>
                 ) : (
                   <p className="mt-3 rounded-lg bg-destructive/15 px-3 py-2 text-xs text-destructive-foreground">
-                    ⚠️ Step-free route available nahi hai is room tak — stairs use karein.
+                    ⚠️ No step-free route is available to this room — use stairs.
                   </p>
                 )}
 
@@ -291,8 +291,8 @@ function CampusNav() {
                 </label>
                 {stepFree && !destination.accessible && (
                   <p className="mt-2 rounded-lg bg-destructive/15 px-3 py-2 text-xs text-destructive-foreground">
-                    ⚠️ Ye room sirf stairs se pahuncha ja sakta hai. Block entrance par staff se
-                    help lein.
+                    ⚠️ This room can only be reached by stairs. Ask staff for help at the block
+                    entrance.
                   </p>
                 )}
               </div>
@@ -325,10 +325,10 @@ function CampusNav() {
 
           {!destination && (
             <div className="panel p-4 text-sm text-muted-foreground">
-              <p className="font-display text-base text-foreground">Naye ho campus par? 🧑‍🎓</p>
+              <p className="font-display text-base text-foreground">New to campus? 🧑‍🎓</p>
               <p className="mt-1">
-                Upar apni location chuno, phir search karo ya map par kisi bhi marker ko tap karo —
-                rasta turant mil jayega.
+                Select your location above, then search or tap any marker on the map — directions
+                appear instantly.
               </p>
             </div>
           )}
